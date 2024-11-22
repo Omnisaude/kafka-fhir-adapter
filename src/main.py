@@ -1,7 +1,5 @@
-import json
 import logging
 import os
-import traceback
 import faust
 
 from src.validador import is_mensagem_valida
