@@ -2,4 +2,4 @@
 
 sleep 10
 
-exec faust -A main worker -l info
+exec faust -A src.main worker -l info

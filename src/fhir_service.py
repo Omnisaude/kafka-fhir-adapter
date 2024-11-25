@@ -3,6 +3,7 @@ import json
 from typing import Optional
 
 from faust.app import App
+
 from fhir.resources.R4B.operationoutcome import OperationOutcome
 
 
