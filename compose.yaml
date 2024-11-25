@@ -70,7 +70,7 @@ services:
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components,/home/appuser/kafka-connectors"
       CONNECT_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR
     volumes:
-      - ./src/kafka_dir/jars:/home/appuser/kafka-connectors
+      - ./kafka_dir/jars:/home/appuser/kafka-connectors
 
   control-center:
     image: confluentinc/cp-enterprise-control-center:7.7.1
@@ -114,10 +114,9 @@ services:
     container_name: consumidor
     build:
       context: .
-      dockerfile: src/validador/Dockerfile
+      dockerfile: src/Dockerfile
     environment:
       KAFKA_BROKER: 'broker:29092'
-      TOPIC_NAME: 'bem-vindo'
     depends_on:
       - broker
       - control-center

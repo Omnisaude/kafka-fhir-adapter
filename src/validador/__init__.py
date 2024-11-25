@@ -1,1 +1,0 @@
-from .validador import *
