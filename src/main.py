@@ -8,15 +8,16 @@ from src.resources.organization import init_organization
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 broker = os.getenv('KAFKA_BROKER', 'kafka://localhost:9092')
+topic_organization_name = os.getenv('TOPIC_ORGANIZATION_NAME', 'organization')
 app = faust.App('fhir_consumer', broker=broker)
 
 # topicos
-topico_ginfes_nfse = app.topic('origem-aginfes_nfse')
+organization_topic = app.topic(topic_organization_name)
 # topico_organization = app.topic('origem-organization')
 
 
-@app.agent(topico_ginfes_nfse, enable_auto_commit=False)
-async def process_topico_ginfes_nfse(messages):
+@app.agent(organization_topic, enable_auto_commit=False)
+async def process_organization_topic(messages):
     async for message in messages:
         organization_fhir = init_organization(message)
 

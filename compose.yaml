@@ -117,6 +117,7 @@ services:
       dockerfile: src/Dockerfile
     environment:
       KAFKA_BROKER: 'broker:29092'
+      TOPIC_ORGANIZATION_NAME: 'amh_organization'
     depends_on:
       - broker
       - control-center
