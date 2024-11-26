@@ -9,13 +9,13 @@ from fhir.resources.R4B.fhirprimitiveextension import FHIRPrimitiveExtension
 from fhir.resources.R4B.identifier import Identifier
 from fhir.resources.R4B.period import Period
 
-from src.fhir_service import epoch_timestamp_to_iso_string
+from src.fhir_service import epoch_timestamp_to_iso_string, string_to_bool
 
 
 def init_organization(message: dict) -> str:
     organization = Organization(
         # id="UTIIOP", // o servico ignora o id passado
-        name=message.get('NOME_PRINCIPAL', {}).get('string', None),
+        name=message.get('NOME_PRINCIPAL', None),
         alias=[],
         identifier=[],
         address=[],
@@ -31,7 +31,7 @@ def init_organization(message: dict) -> str:
     organization.meta = meta
 
     if message.get('ATIVO', False):
-        organization.active = bool(message.get('ATIVO', False))
+        organization.active = string_to_bool(message.get('ATIVO', 'false'))
 
     identifier = Identifier(
         system="https://fhir.omnisaude.co/r4/core/sid/cnpj",
@@ -48,21 +48,21 @@ def init_organization(message: dict) -> str:
 
     telecom = ContactPoint(
         system="phone",
-        value=message.get('TELEFONE', {}).get('string', None),
+        value=message.get('TELEFONE', None),
     )
     organization.telecom.append(telecom)
 
     address = Address(
-        country=message.get('PAIS', {}).get('string', None),
-        state=message.get('ESTADO', {}).get('string', None),
-        city=message.get('CIDADE', {}).get('string', None),
-        postalCode=message.get('CEP', {}).get('string', None),
+        country=message.get('PAIS', None),
+        state=message.get('ESTADO', None),
+        city=message.get('CIDADE', None),
+        postalCode=message.get('CEP', None),
         line=[
-            message.get('BAIRRO', {}).get('string', None),
-            message.get('COMPLEMENTO', {}).get('string', None),
-            message.get('NUMERO', {}).get('string', None),
-            message.get('LOGRADOURO', {}).get('string', None),
-            message.get('TIPO_LOGRADOURO', {}).get('string', None),
+            message.get('BAIRRO', None),
+            message.get('COMPLEMENTO', None),
+            message.get('NUMERO', None),
+            message.get('LOGRADOURO', None),
+            message.get('TIPO_LOGRADOURO', None),
         ],
         _line=[
             FHIRPrimitiveExtension(id="bairro", extension=[]),
@@ -78,7 +78,7 @@ def init_organization(message: dict) -> str:
         extension_cnae = Extension(
             url="https://fhir.omnisaude.co/r4/core/StructureDefinition/cnae",
             extension=[
-                Extension(url="principal", valueCode=message.get('CNAE').get('string', None))
+                Extension(url="principal", valueCode=message.get('CNAE', None))
             ]
         )
         organization.extension.append(extension_cnae)
@@ -88,7 +88,7 @@ def init_organization(message: dict) -> str:
         # para converter essas datas precisa passar para segundos e entao usar a funcao
         extension_organization_period= Extension(
             url="http://hl7.org/fhir/StructureDefinition/organization-period",
-            valuePeriod=Period(start=epoch_timestamp_to_iso_string(message.get('DATA_INICIO', {}).get('long', None)))
+            valuePeriod=Period(start=message.get('DATA_INICIO', None))
         )
         organization.extension.append(extension_organization_period)
 

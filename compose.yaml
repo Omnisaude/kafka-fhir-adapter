@@ -116,8 +116,9 @@ services:
       context: .
       dockerfile: src/Dockerfile
     environment:
-      KAFKA_BROKER: 'broker:29092'
+      KAFKA_BROKER_URL: 'kafka://broker:29092'
       TOPIC_ORGANIZATION_NAME: 'amh_organization'
+      SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
     depends_on:
       - broker
       - control-center

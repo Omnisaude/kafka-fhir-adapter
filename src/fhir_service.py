@@ -24,3 +24,9 @@ async def send_payload(app: App, message: str, url: str):
 
 def epoch_timestamp_to_iso_string(value: Optional[int]):
     return datetime.datetime.fromtimestamp(value / 1000).isoformat() + 'Z'
+
+def string_to_bool(value: str):
+    if value.lower() == 'true':
+        return True
+    else:
+        return False
