@@ -7,7 +7,7 @@ from fhir.resources.R4B.fhirprimitiveextension import FHIRPrimitiveExtension
 from fhir.resources.R4B.identifier import Identifier
 from fhir.resources.R4B.period import Period
 
-from src.services.fhir import string_to_bool
+from kafka_fhir_adapter.services.fhir import string_to_bool
 
 
 def init_organization(message: dict) -> str:

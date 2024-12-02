@@ -1,14 +1,13 @@
 import logging
 import os
 import faust
+from dotenv import load_dotenv
 from confluent_kafka.serialization import SerializationError
 from confluent_kafka.schema_registry import SchemaRegistryClient
 from confluent_kafka.schema_registry.avro import AvroDeserializer
 
-from dotenv import load_dotenv
-
-from src.services.fhir import send_payload, send_validate_payload
-from resources.organization import init_organization
+from kafka_fhir_adapter.services.fhir import send_payload, send_validate_payload
+from kafka_fhir_adapter.resources.organization import init_organization
 
 load_dotenv()
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
