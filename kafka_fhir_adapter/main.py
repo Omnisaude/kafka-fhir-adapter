@@ -1,53 +1,21 @@
 import logging
-import os
 import faust
-from dotenv import load_dotenv
-from confluent_kafka.serialization import SerializationError
 from confluent_kafka.schema_registry import SchemaRegistryClient
-from confluent_kafka.schema_registry.avro import AvroDeserializer
 
-from kafka_fhir_adapter.services.fhir import send_payload, send_validate_payload
-from kafka_fhir_adapter.resources.organization import init_organization
+from kafka_fhir_adapter import config
+from kafka_fhir_adapter.consumers.organization import OrganizationConsumer
 
-load_dotenv()
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
-broker_url = os.getenv('KAFKA_BROKER_URL', 'kafka://localhost:9092')
-schema_registry_url = os.getenv('SCHEMA_REGISTRY_URL', 'http://localhost:8081')
-fhir_server_url = os.getenv('FHIR_SERVER_URL', 'http://localhost:8080')
-
-topic_organization_name = os.getenv('TOPIC_ORGANIZATION_NAME', 'organization')
-
-app = faust.App('fhir_consumer', broker=broker_url, value_serializer='raw')
-schema_registry_client = SchemaRegistryClient({'url': schema_registry_url})
+app = faust.App('fhir_consumer', broker=config.KAFKA_BROKER_URL, value_serializer='raw')
+schema_registry_client = SchemaRegistryClient({'url': config.SCHEMA_REGISTRY_URL})
 
 # TOPICOS QUE SERAO CONSUMIDOS
-organization_topic = app.topic(topic_organization_name)
-# topico_organization = app.topic('origem-organization')
+organization_consumer = OrganizationConsumer(app, schema_registry_client, fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_ORGANIZATION_NAME)
 
-
-@app.agent(organization_topic, enable_auto_commit=False)
+@app.agent(organization_consumer.topic_name)
 async def process_organization_topic(messages):
-    async for raw_message in messages:
-        try:
-            deserializer = AvroDeserializer(schema_registry_client)
-            parsed_message: dict = deserializer(raw_message, {})
-
-            organization_fhir = init_organization(parsed_message)
-
-            validate_response = await send_validate_payload(app, organization_fhir,
-                                                            url=f'{fhir_server_url}/fhir/Organization/$validate')
-            if validate_response:
-                logging.info(f"Mensagem {parsed_message} validada com sucesso!")
-
-                result = await send_payload(app, message=organization_fhir, url=f'{fhir_server_url}/fhir/Organization/')
-
-                logging.info(f"Mensagem enviada com sucesso!, {result}")
-            else:
-                logging.error(f"Mensagem {parsed_message} validada com falha")
-
-        except SerializationError as e:
-            logging.error('erro ao tentar deserializar os dados em avro', e)
+    await organization_consumer.consume(messages)
 
 
 # @app.agent(topico_ginfes_nfse)
