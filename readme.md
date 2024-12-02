@@ -12,9 +12,9 @@ TOPIC_ORGANIZATION_NAME='amh_organization'
 ```
 
 ## Configurar debug local
-- Script: ./src/main.py
+- Script: ./kafka_fhir_adapter/main.py
 - Passe isso no script parameters: 
-``` -A src.main worker -l info```
+``` -A kafka_fhir_adapter.main worker -l info```
 
 ## comando para dar build deste dockerfile manualmente
 docker build -t meucontainer -f faust/Dockerfile .
