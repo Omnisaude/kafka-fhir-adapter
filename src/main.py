@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import faust
@@ -8,14 +7,15 @@ from confluent_kafka.schema_registry.avro import AvroDeserializer
 
 from dotenv import load_dotenv
 
-from src.fhir_service import send_payload, send_validate_payload
-from src.resources.organization import init_organization
+from src.services.fhir import send_payload, send_validate_payload
+from resources.organization import init_organization
 
 load_dotenv()
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 broker_url = os.getenv('KAFKA_BROKER_URL', 'kafka://localhost:9092')
 schema_registry_url = os.getenv('SCHEMA_REGISTRY_URL', 'http://localhost:8081')
+fhir_server_url = os.getenv('FHIR_SERVER_URL', 'http://localhost:8080')
 
 topic_organization_name = os.getenv('TOPIC_ORGANIZATION_NAME', 'organization')
 
@@ -37,15 +37,16 @@ async def process_organization_topic(messages):
             organization_fhir = init_organization(parsed_message)
 
             validate_response = await send_validate_payload(app, organization_fhir,
-                                                            url='http://172.36.0.84:8080/fhir/Organization/$validate')
+                                                            url=f'{fhir_server_url}/fhir/Organization/$validate')
             if validate_response:
                 logging.info(f"Mensagem {parsed_message} validada com sucesso!")
 
-                result = await send_payload(app, message=organization_fhir,
-                                            url='http://172.36.0.84:8080/fhir/Organization/')
+                result = await send_payload(app, message=organization_fhir, url=f'{fhir_server_url}/fhir/Organization/')
+
                 logging.info(f"Mensagem enviada com sucesso!, {result}")
             else:
                 logging.error(f"Mensagem {parsed_message} validada com falha")
+
         except SerializationError as e:
             logging.error('erro ao tentar deserializar os dados em avro', e)
 

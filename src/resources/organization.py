@@ -1,5 +1,3 @@
-import datetime
-
 from fhir.resources.R4B.contactpoint import ContactPoint
 from fhir.resources.R4B.extension import Extension
 from fhir.resources.R4B.organization import Organization
@@ -9,7 +7,7 @@ from fhir.resources.R4B.fhirprimitiveextension import FHIRPrimitiveExtension
 from fhir.resources.R4B.identifier import Identifier
 from fhir.resources.R4B.period import Period
 
-from src.fhir_service import epoch_timestamp_to_iso_string, string_to_bool
+from src.services.fhir import string_to_bool
 
 
 def init_organization(message: dict) -> str:

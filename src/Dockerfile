@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED=1
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY ./src /app/src
+COPY ./src /app
 
 COPY ./src/entrypoint.sh /usr/local/bin/entrypoint.sh
 

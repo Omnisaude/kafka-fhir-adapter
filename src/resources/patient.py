@@ -12,7 +12,7 @@ from fhir.resources.R4B.coding import Coding
 from fhir.resources.R4B.period import Period
 
 
-# from src.fhir_service import epoch_timestamp_to_iso_string, string_to_bool
+# from fhir_service import epoch_timestamp_to_iso_string, string_to_bool
 
 
 def init_patient(message: dict) -> str:
