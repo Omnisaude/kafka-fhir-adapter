@@ -9,6 +9,7 @@ from fhir.resources.R4B.identifier import Identifier
 from fhir.resources.R4B.codeableconcept import CodeableConcept
 from fhir.resources.R4B.coding import Coding
 
+
 from typing import Optional
 from dataclasses import dataclass
 
@@ -40,7 +41,6 @@ class PatientResource:
     codigo_pais: Optional[str]
     cep: Optional[str]
     endereco_completo: Optional[str]
-
 
     @classmethod
     def from_dict(cls, message: dict):
