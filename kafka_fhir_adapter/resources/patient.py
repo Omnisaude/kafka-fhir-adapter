@@ -1,6 +1,3 @@
-import datetime
-from dataclasses import dataclass
-from typing import Optional
 from fhir.resources.R4B.contactpoint import ContactPoint
 from fhir.resources.R4B.extension import Extension
 from fhir.resources.R4B.patient import Patient
@@ -11,10 +8,11 @@ from fhir.resources.R4B.fhirprimitiveextension import FHIRPrimitiveExtension
 from fhir.resources.R4B.identifier import Identifier
 from fhir.resources.R4B.codeableconcept import CodeableConcept
 from fhir.resources.R4B.coding import Coding
-from fhir.resources.R4B.period import Period
 
 
-# from fhir_service import epoch_timestamp_to_iso_string, string_to_bool
+from typing import Optional
+from dataclasses import dataclass
+
 @dataclass
 class PatientResource:
     id: Optional[str]
@@ -41,7 +39,7 @@ class PatientResource:
     codigo_ibge_cidade: Optional[str]
     codigo_ibge_estado: Optional[str]
     codigo_pais: Optional[str]
-    codigo_cep: Optional[str]
+    cep: Optional[str]
     endereco_completo: Optional[str]
 
     @classmethod
@@ -71,159 +69,183 @@ class PatientResource:
             codigo_ibge_cidade=message.get('CODIGO_IBGE_CIDADE', None),
             codigo_ibge_estado=message.get('CODIGO_IBGE_ESTADO', None),
             codigo_pais=message.get('CODIGO_PAIS', None),
-            codigo_cep=message.get('CODIGO_CEP', None),
+            cep=message.get('CEP', None),
             endereco_completo=message.get('ENDERECO_COMPLETO', None),
     )
 
-    def to_fhir(self):
+    def to_fhir(self) -> Patient:
         patient = Patient(
-            name=[
-                HumanName(
-                    text=self.nome_paciente,
-                )
-            ],
-            identifier=[],
-            extension=[],
-            telecom=[],
-            address=[]
+            meta= Meta(profile=["https://fhir.omnisaude.co/r4/core/StructureDefinition/paciente"])
         )
 
-        meta = Meta(
-            profile=[
-                "https://fhir.omnisaude.co/r4/core/StructureDefinition/paciente"
-            ]
-        )
-        patient.meta = meta
+        if self.nome_paciente:
+            patient.name = [HumanName(text=self.nome_paciente)]
 
         if self.data_nascimento:
-            patient_birthDate = self.data_nascimento
-            patient.birthDate = patient_birthDate
+            patient.birthDate = self.data_nascimento
 
+        # Gênero
         if self.codigo_sexo:
-            patient_sexo = self.codigo_sexo
-            patient.gender = patient_sexo.lower()
+            patient.gender = self.codigo_sexo.lower()
 
+        # Identificadores
+        identifiers = []
         if self.prontuario:
-            identifier_prontuario = Identifier(
+            identifiers.append(Identifier(
                 system="https://fhir.omnisaude.co/r4/core/sid/numero-prontuario-americas-health",
                 value=self.prontuario
-            )
-            patient.identifier.append(identifier_prontuario)
+            ))
 
         if self.cpf:
-            identifier_cpf = Identifier(
+            identifiers.append(Identifier(
                 system="https://fhir.omnisaude.co/r4/core/sid/cpf",
                 value=self.cpf
-            )
-            patient.identifier.append(identifier_cpf)
+            ))
 
         if self.cartao_nacional_saude:
-            identifier_cns = Identifier(
+            identifiers.append(Identifier(
                 system="https://fhir.omnisaude.co/r4/core/sid/cns",
                 value=self.cartao_nacional_saude
-            )
-            patient.identifier.append(identifier_cns)
+            ))
 
+        if identifiers:
+            patient.identifier = identifiers
+
+        # Extensões
+        extensions = []
         if self.nome_mae:
-            extension_mae = Extension(
+            extensions.append(Extension(
                 url="http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName",
                 valueString=self.nome_mae
-            )
-            patient.extension.append(extension_mae)
+            ))
 
         if self.nome_pai:
-            extension_pai = Extension(
+            extensions.append(Extension(
                 url="https://fhir.omnisaude.co/r4/core/StructureDefinition/nome-pai-paciente",
                 valueString=self.nome_pai
-            )
-            patient.extension.append(extension_pai)
+            ))
 
         if self.codigo_nacionalidade:
             coding_nacionalidade = Coding(
                 system="http://www.saude.gov.br/fhir/r4/CodeSystem/BRPais",
-                # Sistema de codificação (SNOMED CT por exemplo)
-                code=self.codigo_nacionalidade,  # Código que representa um conceito
+                code=self.codigo_nacionalidade
             )
-
-            codeable_concept_nacionalidade = CodeableConcept(
-                coding=[coding_nacionalidade],  # Lista de codificações, pois pode ter múltiplas
-            )
-
-            extension_nacionalidade = Extension(
+            codeable_concept_nacionalidade = CodeableConcept(coding=[coding_nacionalidade])
+            extensions.append(Extension(
                 url="http://hl7.org/fhir/StructureDefinition/patient-nationality",
                 extension=[
                     Extension(url="code", valueCodeableConcept=codeable_concept_nacionalidade)
-                    # Corrigir para usar valueCode
                 ]
-            )
+            ))
 
-            patient.extension.append(extension_nacionalidade)
-
-        if self.codigo_raca:
-            coding_raca = Coding(
-                system="http://www.saude.gov.br/fhir/r4/CodeSystem/BRRacaCor",
-                # Sistema de codificação (SNOMED CT por exemplo)
-                code=self.codigo_raca,  # Código que representa um conceito
-            )
-
-            codeable_concept_raca = CodeableConcept(
-                coding=[coding_raca],  # Lista de codificações, pois pode ter múltiplas
-            )
-
-            extension_raca = Extension(
+        if self.codigo_raca or self.codigo_etnia:
+            extension_raca_cor_etnia = Extension(
                 url="http://www.saude.gov.br/fhir/r4/StructureDefinition/BRRacaCorEtnia-1.0",
-                extension=[
-                    Extension(url="race", valueCodeableConcept=codeable_concept_raca)
-                ]
+                extension=[]
             )
-            patient.extension.append(extension_raca)
+            
+            if self.codigo_raca:
+                coding_raca = Coding(
+                    system="http://www.saude.gov.br/fhir/r4/CodeSystem/BRRacaCor",
+                    code=self.codigo_raca
+                )
+                
+                codeable_concept_raca = CodeableConcept(coding=[coding_raca])
+                
+                extension_raca_cor_etnia.extension.append(Extension(url="race", valueCodeableConcept=codeable_concept_raca))
 
-        if self.codigo_etnia:
-            coding_etnia = Coding(
-                system="http://www.saude.gov.br/fhir/r4/CodeSystem/BREtniaIndigena",
-                # Sistema de codificação (SNOMED CT por exemplo)
-                code=self.codigo_etnia,  # Código que representa um conceito
-            )
 
-            codeable_concept_etnia = CodeableConcept(
-                coding=[coding_etnia],  # Lista de codificações, pois pode ter múltiplas
-            )
-
-            extension_etnia = Extension(
-                url="http://www.saude.gov.br/fhir/r4/StructureDefinition/BRRacaCorEtnia-1.0",
-                extension=[
-                    Extension(url="indigenousEthnicity", valueCodeableConcept=codeable_concept_etnia)
-                ]
-            )
-            patient.extension.append(extension_etnia)
+            if self.codigo_etnia:
+                coding_etnia = Coding(
+                    system="http://www.saude.gov.br/fhir/r4/CodeSystem/BREtniaIndigena",
+                    code=self.codigo_etnia
+                )
+                
+                codeable_concept_etnia = CodeableConcept(coding=[coding_etnia])
+                
+                extension_raca_cor_etnia.extension.append(Extension(url="indigenousEthnicity", valueCodeableConcept=codeable_concept_etnia))
+                
+                
+            extensions.append(extension_raca_cor_etnia)
+                
+        if extensions:
+            patient.extension = extensions
 
         if self.telefone:
-            telecom = ContactPoint(
-                system="phone",
-                value=self.telefone,
-            )
-            patient.telecom.append(telecom)
-
-        address = Address(
-            country=self.codigo_pais,
-            state=self.codigo_ibge_estado,
-            city=self.codigo_ibge_cidade,
-            postalCode=self.codigo_cep,
-            line=[
-                self.bairro,
-                self.complemento,
-                self.numero,
-                self.logradouro,
-                self.codigo_tipo_logradouro
-            ],
-            _line=[
-                FHIRPrimitiveExtension(id="bairro", extension=[]),
-                FHIRPrimitiveExtension(id="complemento", extension=[]),
-                FHIRPrimitiveExtension(id="numero", extension=[]),
-                FHIRPrimitiveExtension(id="logradouro", extension=[]),
-                FHIRPrimitiveExtension(id="tipoLogradouro", extension=[])
-            ]
-        )
-        patient.address.append(address)
+            patient.telecom = [ContactPoint(system="phone", value=self.telefone)]
+            
+        endereco = self.create_address()
+        
+        if not is_address_empty(endereco):
+            patient.address=[]
+            patient.address.append(endereco)
 
         return patient
+    
+
+    def create_address(self) -> Address:
+        address = Address()
+        
+        if self.codigo_pais:
+            address.country = self.codigo_pais
+        
+        if self.codigo_ibge_estado:
+            address.state = self.codigo_ibge_estado
+        
+        if self.codigo_ibge_cidade:
+            address.city = self.codigo_ibge_cidade
+        
+        if self.cep:
+            address.postalCode = self.cep
+        
+        if self.endereco_completo:
+            address.text = self.endereco_completo
+        
+        line=[]
+        _line=[]
+        
+        if self.codigo_tipo_logradouro:
+            line.append(self.codigo_tipo_logradouro)
+            _line.append(FHIRPrimitiveExtension(id="tipoLogradouro", extension=[]))
+        
+        if self.logradouro:
+            line.append(self.logradouro)
+            _line.append(FHIRPrimitiveExtension(id="logradouro", extension=[]))
+        
+        if self.numero:
+            line.append(self.numero)
+            _line.append(FHIRPrimitiveExtension(id="numero", extension=[]))
+            
+        if self.complemento:
+            line.append(self.complemento)
+            _line.append(FHIRPrimitiveExtension(id="complemento", extension=[]))
+            
+        if self.bairro:
+            line.append(self.bairro)
+            _line.append(FHIRPrimitiveExtension(id="bairro", extension=[]))
+        
+        if line:    
+            address.line=line
+            address.line__ext=_line
+        
+        return address
+        
+def is_address_empty(address: Address) -> bool:
+    if any([
+            address.use,
+            address.type,
+            address.text,
+            address.line,
+            address.city,
+            address.district,
+            address.state,
+            address.postalCode,
+            address.country,
+            address.period
+            ]):
+        return False
+
+    return True
+
+
+export = is_address_empty, PatientResource
