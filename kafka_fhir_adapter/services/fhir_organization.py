@@ -7,7 +7,7 @@ async def get_organization_id_by_identifier_cnpj(identifier: str):
     url = f"{FHIR_SERVER_URL}/fhir/Organization?identifier=https://fhir.omnisaude.co/r4/core/sid/cnpj|{identifier}"
     # Faz a requisição ao servidor FHIR
 
-    response = await requests.get(url)
+    response = requests.get(url)
 
     if response.status_code == 200:
         data = response.json()
