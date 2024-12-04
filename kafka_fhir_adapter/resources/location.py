@@ -11,6 +11,7 @@ from fhir.resources.R4B.identifier import Identifier
 from fhir.resources.R4B.reference import Reference
 from kafka_fhir_adapter.services.fhir_organization import get_organization_id_by_identifier_cnpj
 
+
 @dataclass
 class LocationResource:
     id: None 
@@ -42,18 +43,18 @@ class LocationResource:
             nome_setor_atendimento=message.get("NOME_SETOR_ATENDIMENTO",None),
             telefone=message.get("TELEFONE",None),
             cnpj_estabelecimento=message.get("CNPJ_ESTABELECIMENTO",None),
-            codigo_tipo_logradouro=message.get('TIPO_LOGRADOURO', None),
+            tipo_logradouro=message.get('TIPO_LOGRADOURO', None),
             logradouro=message.get('LOGRADOURO', None),
             numero=message.get('NUMERO', None),
             complemento=message.get('COMPLEMENTO', None),
             bairro=message.get('BAIRRO', None),
-            codigo_ibge_cidade=message.get('CIDADE', None),
-            codigo_ibge_estado=message.get('ESTADO', None),
-            codigo_pais=message.get('PAIS', None),
-            codigo_cep=message.get('CEP', None),
+            cidade=message.get('CIDADE', None),
+            estado=message.get('ESTADO', None),
+            pais=message.get('PAIS', None),
+            cep=message.get('CEP', None),
     )
 
-    def to_fhir(self):
+    async def to_fhir(self):
         location = Location(
             name=self.nome_setor_atendimento,
             identifier=[],
@@ -79,7 +80,7 @@ class LocationResource:
             location.telecom.append(telecom)
 
         if self.cnpj_estabelecimento:
-            id_organization = get_organization_id_by_identifier_cnpj(self.cnpj_estabelecimento)
+            id_organization = await get_organization_id_by_identifier_cnpj(self.cnpj_estabelecimento)
             reference = Reference(
                 reference=f"Organization/{id_organization}"
             )

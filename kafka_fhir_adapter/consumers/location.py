@@ -29,7 +29,8 @@ class LocationConsumer:
             parsed_message: dict = deserializer(raw_message, {})
 
             location = LocationResource.from_dict(parsed_message)
-            location_json = json.loads(location.to_fhir().json())
+            location_fhir = await location.to_fhir()  # Chamada assíncrona
+            location_json = json.loads(location_fhir.json())
 
             validate_url = f"{self.fhir_server_url}/fhir/Location/$validate"
             send_url = f"{self.fhir_server_url}/fhir/Location/"
