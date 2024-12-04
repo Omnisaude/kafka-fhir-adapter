@@ -3,7 +3,7 @@ import json
 from fhir.resources.R4B.address import Address
 from fhir.resources.R4B.fhirprimitiveextension import FHIRPrimitiveExtension
 
-from src.resources.patient import create_address, is_address_empty, init_patient
+from kafka_fhir_adapter.resources.patient import is_address_empty, PatientResource
 
 complete_message_patient = '''{
   "CODIGO_PESSOA_FISICA": "1231231",
@@ -66,7 +66,8 @@ class TestPaciente(unittest.TestCase):
   def test_create_patient_complete(self):
     message = json.loads(complete_message_patient)
     
-    patient = init_patient(message)
+    patient_resource = PatientResource.from_dict(message)
+    patient = patient_resource.to_fhir()
     
     self.assertEqual(patient.name[0].text, "Testevaldo da Silva")
     self.assertEqual(patient.birthDate.strftime("%Y-%m-%d"), "1957-08-12")
@@ -100,21 +101,27 @@ class TestPaciente(unittest.TestCase):
   def test_is_address_empty_true(self):
       message = json.loads(no_address_message_patient)
       
-      endereco = create_address(message)
+      patient_resource = PatientResource.from_dict(message)
+      
+      endereco = patient_resource.create_address()
       
       self.assertTrue(is_address_empty(endereco))
 
   def test_is_address_empty_false(self):
       message = json.loads(complete_message_patient)
       
-      endereco = create_address(message)
+      patient_resource = PatientResource.from_dict(message)
+
+      endereco = patient_resource.create_address()
       
       self.assertFalse(is_address_empty(endereco))
 
   def test_create_address_complete(self):
       message = json.loads(complete_message_patient)
       
-      endereco = create_address(message)
+      patient_resource = PatientResource.from_dict(message)
+      
+      endereco = patient_resource.create_address()
       
       self.assertEqual(endereco.country, "BRA")
       self.assertEqual(endereco.state, "17")
@@ -130,8 +137,10 @@ class TestPaciente(unittest.TestCase):
 
   def test_create_address_empty(self):
       message = json.loads(no_address_message_patient)
+
+      patient_resource = PatientResource.from_dict(message)
       
-      endereco = create_address(message)
+      endereco = patient_resource.create_address()
       
       self.assertIsNone(endereco.country)
       self.assertIsNone(endereco.state)
