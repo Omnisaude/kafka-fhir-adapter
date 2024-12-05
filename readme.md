@@ -22,3 +22,17 @@ docker build -t meucontainer -f faust/Dockerfile .
 ### comandos para reiniciar o consumo do consumer-groups (para testes)
 - kafka-consumer-groups --bootstrap-server broker:9092 --group fhir_consumer --describe
 - kafka-consumer-groups --bootstrap-server broker:9092 --group fhir_consumer --topic amh_organization --reset-offsets --to-earliest --execute
+
+## Testes
+Para executar todos os testes:
+
+```bash
+pytest
+```
+
+## Dependências
+Instale as dependências usando o `pip`:
+
+```bash
+pip install -r requirements.txt
+```
