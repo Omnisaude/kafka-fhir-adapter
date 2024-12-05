@@ -1,16 +1,15 @@
 from dataclasses import dataclass
 from typing import Optional
-import datetime
 from fhir.resources.R4B.coding import Coding
 from fhir.resources.R4B.encounter import Encounter
 from fhir.resources.R4B.meta import Meta
 from fhir.resources.R4B.identifier import Identifier
 from fhir.resources.R4B.reference import Reference
 from fhir.resources.R4B.period import Period
-from kafka_fhir_adapter.services.fhir_organization import get_organization_id_by_identifier_cnpj
-from kafka_fhir_adapter.services.fhir_location import get_location_id_by_location_name_and_organization_id
+from kafka_fhir_adapter.services.fhir_organization import *
+from kafka_fhir_adapter.services.fhir_location import *
 from kafka_fhir_adapter.services.fhir import epoch_timestamp_to_iso_string
-from kafka_fhir_adapter.services.fhir_patient import get_patient_by_prontuario_amh, get_patient_by_cpf
+from kafka_fhir_adapter.services.fhir_patient import *
 
 @dataclass
 class EncounterResource:
@@ -48,69 +47,71 @@ class EncounterResource:
         )
     
     async def to_fhir(self):
-        encounter = Encounter(
-            
-        )
+        if not self.tipo_atendimento:
+            raise AttributeError("tipo_atendimento is required | Encounter.class is required")
 
-        meta = Meta(
-            profile=[
-                "https://fhir.omnisaude.co/r4/core/StructureDefinition/encounter"
-            ]
+        tipo_atendimento_mapping = {
+            "Internado": "IMP",    # Internado -> Inpatient Encounter
+            "Pronto socorro": "EMER",   # Pronto Socorro -> Emergency Encounter
+            "Atendimento domiciliar": "HH",     # Atendimento Domiciliar -> Home Health Encounter
+            "Externo": "FLD",    # Externo -> Field Encounter
+            "Ambulatorial": "AMB"     # Ambulatorial -> Ambulatory Encounter
+        }
+
+        codigo_fhir_class = tipo_atendimento_mapping.get(self.tipo_atendimento)
+
+        if not codigo_fhir_class:
+            raise ValueError(f"Tipo de atendimento inválido: {self.tipo_atendimento}")
+
+        # required element
+        encounter_class = Coding(
+            system="http://terminology.hl7.org/CodeSystem/v3-ActCode",
+            code=codigo_fhir_class
         )
-        encounter.meta = meta
+        
+        if not self.status_atendimento:
+            raise AttributeError("status_atendimento is required | Encounter.status is required")
+            
+        status_atendimento_mapping = {
+            "Atendido": "finished",      # Atendido -> Finished
+            "Em espera": "planned",       # Em espera -> Planned
+            "Em consulta": "in-progress"    # Em consulta -> In Progress
+        }
+        
+        # required element
+        codigo_fhir_status = status_atendimento_mapping.get(self.status_atendimento)
+        
+        if not codigo_fhir_status:
+            raise ValueError(f"Status de atendimento inválido: {self.status_atendimento}")       
+
+
+        encounter = Encounter(
+            meta = Meta(profile=["https://fhir.omnisaude.co/r4/core/StructureDefinition/encounter"]),
+            class_fhir=encounter_class,
+            status=codigo_fhir_status
+            )
 
         if self.cnpj_estabelecimento:
-            id_organization = await get_organization_id_by_identifier_cnpj(self.cnpj_estabelecimento)
-            reference_organzation = Reference(
-                reference=f"Organization/{id_organization}"
-            )
-        encounter.serviceProvider = reference_organzation
+            organization_id = await get_organization_id_by_cnpj(self.cnpj_estabelecimento)
+            
+            if organization_id:
+                encounter.serviceProvider = Reference(
+                    reference=f"Organization/{organization_id}"
+                )
 
         if self.nome_setor_atendimento:
-            id_location = await get_location_id_by_location_name_and_organization_id(self.nome_setor_atendimento,id_organization)
-            reference_location = Reference(
-                reference=f"Location/{id_location}"
-            )
-        encounter.location = reference_location
+            id_location = await get_location_id_by_name_and_organization_id(self.nome_setor_atendimento, organization_id)
+            
+            if id_location:
+                encounter.location = Reference(
+                    reference=f"Location/{id_location}"
+                )
 
-        if self.tipo_atendimento:
-            tipo_atendimento_mapping = {
-                "Internado": "IMP",    # Internado -> Inpatient Encounter
-                "Pronto socorro": "EMER",   # Pronto Socorro -> Emergency Encounter
-                "Atendimento domiciliar": "HH",     # Atendimento Domiciliar -> Home Health Encounter
-                "Externo": "FLD",    # Externo -> Field Encounter
-                "Ambulatorial": "AMB"     # Ambulatorial -> Ambulatory Encounter
-            }
-    
-            codigo_fhir = tipo_atendimento_mapping.get(self.tipo_atendimento)
-    
-            if codigo_fhir:
-                encounter.class_fhir = Coding(
-                system="http://terminology.hl7.org/CodeSystem/v3-ActCode",
-                code=codigo_fhir
-            )
-            else:
-                raise ValueError(f"Tipo de atendimento inválido: {self.tipo_atendimento}")
-        
-        if self.status_atendimento:
-            status_atendimento_mapping = {
-                "Atendido": "finished",      # Atendido -> Finished
-                "Em espera": "planned",       # Em espera -> Planned
-                "Em consulta": "in-progress"    # Em consulta -> In Progress
-            }
-            
-            codigo_fhir_status = status_atendimento_mapping.get(self.status_atendimento)
-            
-            if codigo_fhir_status:
-                encounter.status = codigo_fhir_status
-            else:
-                raise ValueError(f"Status de atendimento inválido: {self.status_atendimento}")
-    
         if self.dt_entrada:
-            encounter_data_inicio = epoch_timestamp_to_iso_string(self.dt_entrada)
+            encounter_data_inicio = epoch_timestamp_to_iso_string(int(self.dt_entrada))
 
         if self.dt_alta:
-            encounter_data_fim = epoch_timestamp_to_iso_string(self.dt_alta)
+            encounter_data_fim = epoch_timestamp_to_iso_string(int(self.dt_alta))
 
         if encounter_data_inicio or encounter_data_fim:
             encounter.period = Period(
@@ -119,24 +120,23 @@ class EncounterResource:
             )
 
         patient_reference = None
-
+        
         if self.cpf_paciente:
-            patient_reference = await get_patient_by_cpf(self.cpf_paciente)
-            encounter.subject = Reference(
-                reference=f"Patient/{patient_reference['id']}"  # Usar o ID retornado pelo recurso
-            )
-
+            patient_id = await get_patient_id_by_cpf(self.cpf_paciente)
+            
+            if patient_id:
+                patient_reference = Reference(
+                    reference=f"Patient/{patient_id}" 
+                )
+                
         if self.prontuario and not patient_reference:
-            patient_reference = await get_patient_by_prontuario_amh(self.prontuario)
-            encounter.subject = Reference(
-                reference=f"Patient/{patient_reference['id']}"  # Usar o ID retornado pelo recurso
-            )
+            patient_id = await get_patient_id_by_prontuario_amh(self.prontuario)
+            
+            if patient_id:
+                patient_reference = Reference(
+                    reference=f"Patient/{patient_id}" 
+                )
+                
+        encounter.subject = patient_reference
     
         return encounter
-        
-
-
-
-
-        
-

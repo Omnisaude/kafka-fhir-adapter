@@ -1,17 +1,42 @@
 import requests
-from config import FHIR_SERVER_URL
-from faust.app import App
 
-async def get_location_id_by_location_name_and_organization_id(name: str, organization: str):
-    # Monta a query para buscar pelo identifier
-    url = f"{FHIR_SERVER_URL}/fhir/Location?name={name}&organization{organization}"
-    # Faz a requisição ao servidor FHIR
+from kafka_fhir_adapter.config import FHIR_BASE_URL
 
-    response = requests.get(url)
 
-    if response.status_code == 200:
-        data = response.json()
-        if "entry" in data and len(data["entry"]) > 0:
-            # Retorna o ID do primeiro recurso encontrado
-            return data["entry"][0]["resource"]["id"]
+FHIR_LOCATION_URL = f"{FHIR_BASE_URL}/Location"
+TIMEOUT_DEFAULT = 10
+
+
+async def get_location_by_name_and_organization_id():
+    return None
+
+async def get_location_by_location_name_and_organization_id(name: str, organization_id: str):
+    params = {
+        'name': name,
+        'organization': f'Organization/{organization_id}'
+    }
+    
+    try:
+        response = requests.get(FHIR_LOCATION_URL, params=params, timeout=TIMEOUT_DEFAULT)
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            if "entry" in data:
+                return data["entry"][0]["resource"]
+        return None
+
+    except requests.exceptions.Timeout:
+        print(f"Timeout ao acessar {FHIR_LOCATION_URL}")
+    except requests.exceptions.RequestException:
+        print(f"Erro ao acessar {FHIR_LOCATION_URL}")
+    except Exception as e:
+        print(f"Erro inesperado ao acessar {FHIR_LOCATION_URL}: {e}")
+    
+    return None
+
+async def get_location_id_by_name_and_organization_id(name: str, organization_id: str):
+    location = await get_location_by_location_name_and_organization_id(name, organization_id)
+    if location:
+        return location['id']
     return None
