@@ -57,8 +57,6 @@ no_address_message_patient = '''{
   "TELEFONE": null
 }'''
 
-
-  
   
 def test_create_patient_complete():
   message = json.loads(complete_message_patient)

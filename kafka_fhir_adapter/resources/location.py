@@ -1,15 +1,13 @@
 from dataclasses import dataclass
-from typing import Optional
-import datetime
-from fhir.resources.R4B.contactpoint import ContactPoint
-from fhir.resources.R4B.extension import Extension
-from fhir.resources.R4B.location import Location
+
 from fhir.resources.R4B.address import Address
-from fhir.resources.R4B.meta import Meta
+from fhir.resources.R4B.contactpoint import ContactPoint
 from fhir.resources.R4B.fhirprimitiveextension import FHIRPrimitiveExtension
-from fhir.resources.R4B.identifier import Identifier
+from fhir.resources.R4B.location import Location
+from fhir.resources.R4B.meta import Meta
 from fhir.resources.R4B.reference import Reference
-from kafka_fhir_adapter.services.fhir_organization import get_organization_id_by_identifier_cnpj
+
+from kafka_fhir_adapter.services.fhir_organization import *
 
 
 @dataclass
@@ -80,7 +78,7 @@ class LocationResource:
             location.telecom.append(telecom)
 
         if self.cnpj_estabelecimento:
-            id_organization = await get_organization_id_by_identifier_cnpj(self.cnpj_estabelecimento)
+            id_organization = await get_organization_id_by_cnpj(self.cnpj_estabelecimento)
             reference = Reference(
                 reference=f"Organization/{id_organization}"
             )
