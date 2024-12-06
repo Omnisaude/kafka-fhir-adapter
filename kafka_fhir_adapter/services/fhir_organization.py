@@ -10,7 +10,6 @@ TIMEOUT_DEFAULT = 10
 
 CNPJ_SYSTEM = "https://fhir.omnisaude.co/r4/core/sid/cnpj"
 
-
 async def get_organization_by_identifier(identifier: Identifier) -> Optional[str]:
     params = {
         'identifier': f'{identifier.system}|{identifier.value}'

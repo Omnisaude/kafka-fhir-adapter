@@ -1,15 +1,15 @@
 from dataclasses import dataclass
-from typing import Optional
+
 from fhir.resources.R4B.coding import Coding
-from fhir.resources.R4B.encounter import Encounter
+from fhir.resources.R4B.encounter import Encounter, EncounterLocation
 from fhir.resources.R4B.meta import Meta
-from fhir.resources.R4B.identifier import Identifier
-from fhir.resources.R4B.reference import Reference
 from fhir.resources.R4B.period import Period
-from kafka_fhir_adapter.services.fhir_organization import *
+from fhir.resources.R4B.reference import Reference
+
 from kafka_fhir_adapter.services.fhir_location import *
-from kafka_fhir_adapter.services.fhir import epoch_timestamp_to_iso_string
+from kafka_fhir_adapter.services.fhir_organization import *
 from kafka_fhir_adapter.services.fhir_patient import *
+
 
 @dataclass
 class EncounterResource:
@@ -86,7 +86,7 @@ class EncounterResource:
 
 
         encounter = Encounter(
-            meta = Meta(profile=["https://fhir.omnisaude.co/r4/core/StructureDefinition/encounter"]),
+            meta = Meta(profile=["https://fhir.omnisaude.co/r4/core/StructureDefinition/encontro"]),
             class_fhir=encounter_class,
             status=codigo_fhir_status
             )
@@ -99,25 +99,25 @@ class EncounterResource:
                     reference=f"Organization/{organization_id}"
                 )
 
-        if self.nome_setor_atendimento:
-            id_location = await get_location_id_by_name_and_organization_id(self.nome_setor_atendimento, organization_id)
-            
-            if id_location:
-                encounter.location = Reference(
-                    reference=f"Location/{id_location}"
-                )
+                if self.nome_setor_atendimento:
+                    id_location = await get_location_id_by_name_and_organization_id(self.nome_setor_atendimento, organization_id)
 
+                    if id_location:
+                        encounter.location = []
+                        encounter_location = EncounterLocation(
+                            location = Reference(reference=f"Location/{id_location}")
+                        )
+                        encounter.location.append(encounter_location)
+
+        encounter_period = Period()
         if self.dt_entrada:
-            encounter_data_inicio = epoch_timestamp_to_iso_string(int(self.dt_entrada))
+            encounter_period.start = self.dt_entrada
 
         if self.dt_alta:
-            encounter_data_fim = epoch_timestamp_to_iso_string(int(self.dt_alta))
+            encounter_period.end = self.dt_alta
 
-        if encounter_data_inicio or encounter_data_fim:
-            encounter.period = Period(
-                start= encounter_data_inicio,
-                end= encounter_data_fim
-            )
+        if self.dt_entrada or self.dt_alta:
+            encounter.period = encounter_period
 
         patient_reference = None
         
