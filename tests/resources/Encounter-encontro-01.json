@@ -1,0 +1,58 @@
+{
+  "resourceType": "Encounter",
+  "id": "encontro-01",
+  "meta": {
+    "profile": [
+      "https://fhir.omnisaude.co/r4/core/StructureDefinition/encontro"
+    ]
+  },
+  "identifier": [
+    {
+      "system": "https://fhir.omnisaude.co/r4/core/sid/numero-atendimento-americas-health",
+      "value": "1234567890"
+    }
+  ],
+  "type": [
+    {
+      "text": "Consulta de rotina"
+    }
+  ],
+  "participant": [
+    {
+      "type": [
+        {
+          "coding": [
+            {
+              "code": "PART",
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType"
+            }
+          ]
+        }
+      ],
+      "individual": {
+        "reference": "PractitionerRole/papel-profissional-02"
+      }
+    }
+  ],
+  "period": {
+    "start": "2024-06-10T10:00:00-03:00"
+  },
+  "location": [
+    {
+      "location": {
+        "reference": "Location/local-02"
+      }
+    }
+  ],
+  "status": "finished",
+  "class": {
+    "code": "ambulatory",
+    "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+  },
+  "subject": {
+    "reference": "Patient/paciente-01"
+  },
+  "serviceProvider": {
+    "reference": "Organization/AMH"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "resourceType": "Practitioner",
+  "id": "profissional-01",
+  "meta": {
+    "profile": [
+      "https://fhir.omnisaude.co/r4/core/StructureDefinition/profissional"
+    ]
+  },
+  "identifier": [
+    {
+      "system": "https://fhir.omnisaude.co/r4/core/sid/cpf",
+      "value": "03276299359"
+    },
+    {
+      "system": "https://fhir.omnisaude.co/r4/core/sid/cns",
+      "value": "700504509336751"
+    }
+  ],
+  "name": [
+    {
+      "text": "Daniel Nogueira"
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "+55 62 99999-9999"
+    },
+    {
+      "system": "email",
+      "value": "danielnogueira@gmail.com"
+    }
+  ],
+  "address": [
+    {
+      "line": [
+        "081",
+        "da Pátria",
+        "74",
+        "Quadra 68 Lote 21 Sala 01",
+        "Santa Genoveva"
+      ],
+      "_line": [
+        {
+          "id": "tipoLogradouro"
+        },
+        {
+          "id": "logradouro"
+        },
+        {
+          "id": "numero"
+        },
+        {
+          "id": "complemento"
+        },
+        {
+          "id": "bairro"
+        }
+      ],
+      "state": "52",
+      "city": "520870",
+      "postalCode": "74670300",
+      "text": "R. da Pátria, 74 - Qd 28, Lt 61 - Santa Genoveva, Goiânia - GO, 74670-300"
+    }
+  ],
+  "active": true
+}

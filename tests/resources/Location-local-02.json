@@ -1,0 +1,64 @@
+{
+  "resourceType": "Location",
+  "id": "local-02",
+  "meta": {
+    "profile": [
+      "https://fhir.omnisaude.co/r4/core/StructureDefinition/location"
+    ]
+  },
+  "address": {
+    "line": [
+      "081",
+      "3",
+      "1022",
+      "Oeste",
+      "Sala 1601, 16º andar"
+    ],
+    "_line": [
+      {
+        "id": "tipoLogradouro"
+      },
+      {
+        "id": "logradouro"
+      },
+      {
+        "id": "numero"
+      },
+      {
+        "id": "bairro"
+      },
+      {
+        "id": "complemento"
+      }
+    ],
+    "city": "520870",
+    "state": "52",
+    "country": "BRA",
+    "postalCode": "74115-050",
+    "text": "R. 3, 1022 - St. Oeste, Goiânia - GO, 74115-050"
+  },
+  "position": {
+    "latitude": -16.68714430352598,
+    "longitude": -49.263284303881804
+  },
+  "hoursOfOperation": [
+    {
+      "daysOfWeek": [
+        "mon",
+        "tue",
+        "wed",
+        "thu",
+        "fri"
+      ],
+      "openingTime": "08:00:00",
+      "closingTime": "18:00:00"
+    }
+  ],
+  "name": "Escritório Corporativo Omnisaude",
+  "status": "active",
+  "description": "Sala Corporativa da empresa Omnisaude",
+  "mode": "instance",
+  "partOf": {
+    "reference": "Location/local-01"
+  }
+}
