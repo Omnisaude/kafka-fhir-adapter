@@ -90,7 +90,18 @@ class EncounterResource:
             class_fhir=encounter_class,
             status=codigo_fhir_status
             )
-
+        
+        identifiers = []
+        if self.nr_atendimento:
+            numero_atendimento = Identifier(
+                system="https://fhir.omnisaude.co/r4/core/sid/numero-atendimento-americas-health",
+                value=self.nr_atendimento
+            )
+            identifiers.append(numero_atendimento)
+            
+        if identifiers:
+            encounter.identifier = identifiers
+            
         if self.cnpj_estabelecimento:
             organization_id = await get_organization_id_by_cnpj(self.cnpj_estabelecimento)
             
