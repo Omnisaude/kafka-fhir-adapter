@@ -24,7 +24,31 @@ docker build -t meucontainer -f faust/Dockerfile .
 - kafka-consumer-groups --bootstrap-server broker:9092 --group fhir_consumer --topic amh_organization --reset-offsets --to-earliest --execute
 
 ## Testes
-Para executar todos os testes:
+
+### Pré requisitos
+Subir servidor de testes (1) e adicionar os recursos da pasta `tests/resources` (2)
+
+Primeiramente **dentro da pasta `tests`** de permissão para os scripts
+```bash
+cd tests
+sudo chmod +x *.sh
+```
+
+(1)  
+Para subir servidor de teste rode o script `up_servidor_test.sh`
+
+```bash
+./up_servidor_test.sh
+```
+
+(2)  
+Para adicionar os recursos da pasta `tests/resources` rode o script `add_resources_test.sh`
+
+```bash
+./add_resources_test.sh
+```
+
+Por fim, para executar todos os testes:
 
 ```bash
 pytest

@@ -1,0 +1,89 @@
+{
+  "resourceType": "Patient",
+  "id": "paciente-01",
+  "meta": {
+    "profile": [
+      "https://fhir.omnisaude.co/r4/core/StructureDefinition/paciente"
+    ]
+  },
+  "identifier": [
+    {
+      "system": "https://fhir.omnisaude.co/r4/core/sid/numero-prontuario-americas-health",
+      "value": "54321"
+    },
+    {
+      "system": "https://fhir.omnisaude.co/r4/core/sid/cpf",
+      "value": "123456789"
+    },
+    {
+      "system": "https://fhir.omnisaude.co/r4/core/sid/cns",
+      "value": "12345678901234"
+    }
+  ],
+  "name": [
+    {
+      "text": "Carlos Alberto"
+    }
+  ],
+  "address": [
+    {
+      "state": "52",
+      "city": "520870"
+    }
+  ],
+  "extension": [
+    {
+      "url": "https://fhir.omnisaude.co/r4/core/StructureDefinition/nome-pai-paciente",
+      "valueString": "José da Silva"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName",
+      "valueString": "Maria Aparecida da Silva"
+    },
+    {
+      "extension": [
+        {
+          "url": "code",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "code": "BRA",
+                "system": "urn:iso:std:iso:3166"
+              }
+            ]
+          }
+        }
+      ],
+      "url": "http://hl7.org/fhir/StructureDefinition/patient-nationality"
+    },
+    {
+      "extension": [
+        {
+          "url": "race",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "code": "01",
+                "system": "http://www.saude.gov.br/fhir/r4/CodeSystem/BRRacaCor"
+              }
+            ]
+          }
+        },
+        {
+          "url": "indigenousEthnicity",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "code": "0001",
+                "system": "http://www.saude.gov.br/fhir/r4/CodeSystem/BREtniaIndigena"
+              }
+            ]
+          }
+        }
+      ],
+      "url": "http://www.saude.gov.br/fhir/r4/StructureDefinition/BRRacaCorEtnia-1.0"
+    }
+  ],
+  "gender": "male",
+  "birthDate": "2002-12-24"
+}

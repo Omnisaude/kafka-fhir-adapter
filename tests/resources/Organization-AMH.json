@@ -1,0 +1,80 @@
+{
+  "resourceType": "Organization",
+  "id": "AMH",
+  "meta": {
+    "profile": [
+      "https://fhir.omnisaude.co/r4/core/StructureDefinition/organizacao"
+    ]
+  },
+  "identifier": [
+    {
+      "system": "https://fhir.omnisaude.co/r4/core/sid/cnpj",
+      "value": "14021734000161"
+    }
+  ],
+  "alias": [
+    "Americas Health Participacoes S.a."
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "+55 (62) 3956-5850"
+    },
+    {
+      "system": "url",
+      "value": "https://americashealth.co"
+    }
+  ],
+  "address": [
+    {
+      "line": [
+        "81",
+        "da Pátria",
+        "74",
+        "Quadra 68 Lote 21 Sala 01",
+        "Santa Genoveva"
+      ],
+      "_line": [
+        {
+          "id": "tipoLogradouro"
+        },
+        {
+          "id": "logradouro"
+        },
+        {
+          "id": "numero"
+        },
+        {
+          "id": "complemento"
+        },
+        {
+          "id": "bairro"
+        }
+      ],
+      "city": "520870",
+      "state": "52",
+      "country": "BRA",
+      "postalCode": "74670300",
+      "text": "R. da Pátria, 74 - Qd 28, Lt 61 - Santa Genoveva, Goiânia - GO, 74670-300"
+    }
+  ],
+  "extension": [
+    {
+      "extension": [
+        {
+          "url": "principal",
+          "valueCode": "6462-0/00"
+        }
+      ],
+      "url": "https://fhir.omnisaude.co/r4/core/StructureDefinition/cnae"
+    },
+    {
+      "valuePeriod": {
+        "start": "2011-06-08"
+      },
+      "url": "http://hl7.org/fhir/StructureDefinition/organization-period"
+    }
+  ],
+  "name": "Americas Health",
+  "active": true
+}
