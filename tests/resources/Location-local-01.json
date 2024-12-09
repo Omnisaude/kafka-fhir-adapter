@@ -1,0 +1,64 @@
+{
+  "resourceType": "Location",
+  "id": "local-01",
+  "meta": {
+    "profile": [
+      "https://fhir.omnisaude.co/r4/core/StructureDefinition/location"
+    ]
+  },
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "(62) 3088-4005"
+    }
+  ],
+  "address": {
+    "line": [
+      "081",
+      "3",
+      "1022",
+      "Oeste"
+    ],
+    "_line": [
+      {
+        "id": "tipoLogradouro"
+      },
+      {
+        "id": "logradouro"
+      },
+      {
+        "id": "numero"
+      },
+      {
+        "id": "bairro"
+      }
+    ],
+    "city": "520870",
+    "state": "52",
+    "country": "BRA",
+    "postalCode": "74115-050",
+    "text": "R. 3, 1022 - St. Oeste, Goiânia - GO, 74115-050"
+  },
+  "position": {
+    "latitude": -16.68714430352598,
+    "longitude": -49.263284303881804
+  },
+  "hoursOfOperation": [
+    {
+      "daysOfWeek": [
+        "mon",
+        "tue",
+        "wed",
+        "thu",
+        "fri",
+        "sat",
+        "sun"
+      ],
+      "allDay": true
+    }
+  ],
+  "name": "Condomínio West Office",
+  "status": "active",
+  "description": "Prédio comercial",
+  "mode": "instance"
+}

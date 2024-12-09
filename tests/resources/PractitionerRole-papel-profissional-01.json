@@ -1,0 +1,30 @@
+{
+  "resourceType": "PractitionerRole",
+  "id": "papel-profissional-01",
+  "meta": {
+    "profile": [
+      "https://fhir.omnisaude.co/r4/core/StructureDefinition/papel-profissional"
+    ]
+  },
+  "location": [
+    {
+      "reference": "Location/local-02"
+    }
+  ],
+  "code": [
+    {
+      "coding": [
+        {
+          "code": "317110",
+          "system": "http://www.saude.gov.br/fhir/r4/CodeSystem/BRCBO"
+        }
+      ]
+    }
+  ],
+  "practitioner": {
+    "reference": "Practitioner/profissional-01"
+  },
+  "organization": {
+    "reference": "Organization/AMH"
+  }
+}
