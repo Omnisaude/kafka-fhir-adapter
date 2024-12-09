@@ -120,8 +120,8 @@ services:
       KAFKA_BROKER_URL: '${KAFKA_BROKER_URL:-kafka://broker:29092}'
       SCHEMA_REGISTRY_URL: '${SCHEMA_REGISTRY_URL}:-http://schema-registry:8081'
       TOPIC_ORGANIZATION_NAME: '${TOPIC_ORGANIZATION_NAME}'
-      FHIR_SERVER_URL: '${FHIR_SERVER_URL}'
-      DATABASE_URL: '${DATABASE_URL}'
+      FHIR_SERVER_URL: '${FHIR_SERVER_URL}:-http://ip:8080'
+      DATABASE_URL: '${DATABASE_URL}:-postgresql://user:password@ip:5432/database'
     depends_on:
       - broker
       - control-center
