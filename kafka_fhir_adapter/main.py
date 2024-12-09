@@ -4,6 +4,7 @@ from confluent_kafka.schema_registry import SchemaRegistryClient
 
 from kafka_fhir_adapter import config
 from kafka_fhir_adapter.consumers.organization import OrganizationConsumer
+from kafka_fhir_adapter.database.base import init_db
 
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -28,4 +29,5 @@ async def process_organization_topic(messages):
 
 
 if __name__ == '__main__':
+    init_db()
     app.main()

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional
 
 from fhir.resources.R4B.contactpoint import ContactPoint
@@ -33,7 +34,7 @@ class OrganizationResource:
     tipo_logradouro: Optional[str]
     cnae: Optional[str]
     data_inicio: Optional[str]
-    data_atualizacao_tasy: [str]
+    data_atualizacao_tasy: [datetime]
 
     @classmethod
     def from_dict(cls, message: dict):
@@ -56,7 +57,7 @@ class OrganizationResource:
             tipo_logradouro = message.get('TIPO_LOGRADOURO', None),
             cnae = message.get('CNAE', None),
             data_inicio = message.get('DATA_INICIO', None),
-            data_atualizacao_tasy=None
+            data_atualizacao_tasy=message.get('DATA_ATUALIZACAO', None)
         )
 
     def to_fhir(self):
