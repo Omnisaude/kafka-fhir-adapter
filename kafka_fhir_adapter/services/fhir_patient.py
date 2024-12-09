@@ -65,3 +65,22 @@ async def get_patient_id_by_prontuario_amh(prontuario_amh: str) -> Optional[str]
     if patient:
         return patient["id"]
     return None
+
+async def get_patient_id_by_cns(cns: str) -> Optional[str]:
+    patient = await get_patient_by_cns(cns)
+    if patient:
+        return patient["id"]
+    return None
+
+async def get_patient_id(cpf: str = None, cns: str = None, prontuario_amh: str = None) -> Optional[str]:
+    patient_id = None
+    if cpf:
+        patient_id = await get_patient_id_by_cpf(cpf)
+
+    if not patient_id and cns:
+        patient_id = await get_patient_id_by_cns(cns)
+
+    if not patient_id and prontuario_amh:
+        patient_id = await get_patient_id_by_prontuario_amh(prontuario_amh)
+
+    return patient_id
