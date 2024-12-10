@@ -42,25 +42,15 @@ class ConditionResource:
             practitioner_cpf= message.get("CPF_MEDICO",None),
         )
 
-    async def to_fhir(self):
+    async def to_fhir(self) -> Condition:
 
         patient_reference = None
+        patient_id = await get_patient_id(cpf=self.patient_reference_cpf, prontuario_amh=self.patient_reference_prontuario)
 
-        if self.patient_reference_cpf:
-            patient_id = await get_patient_id_by_cpf(self.patient_reference_cpf)
-
-            if patient_id:
-                patient_reference = Reference(
-                    reference=f"Patient/{patient_id}"
-                )
-
-        if self.patient_reference_prontuario and not patient_reference:
-            patient_id = await get_patient_id_by_prontuario_amh(self.patient_reference_prontuario)
-
-            if patient_id:
-                patient_reference = Reference(
-                    reference=f"Patient/{patient_id}"
-                )
+        if patient_id:
+            patient_reference = Reference(
+                reference=f"Patient/{patient_id}"
+            )
 
         coding_clinical_status = Coding(
             system="http://terminology.hl7.org/CodeSystem/condition-clinical",
@@ -78,7 +68,7 @@ class ConditionResource:
         condition = Condition(
             code = codeable_concept_code,
             clinicalStatus = codeable_concept_clinical_status,
-            meta = Meta(profile=["https://fhir.omnisaude.co/r4/core/StructureDefinition/Condicao"]),
+            meta = Meta(profile=["https://fhir.omnisaude.co/r4/core/StructureDefinition/condicao"]),
             subject = patient_reference
         )
 

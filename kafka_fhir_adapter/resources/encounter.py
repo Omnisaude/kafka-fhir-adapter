@@ -130,24 +130,13 @@ class EncounterResource:
         if self.dt_entrada or self.dt_alta:
             encounter.period = encounter_period
 
-        patient_reference = None
-        
-        if self.cpf_paciente:
-            patient_id = await get_patient_id_by_cpf(self.cpf_paciente)
-            
-            if patient_id:
-                patient_reference = Reference(
-                    reference=f"Patient/{patient_id}" 
-                )
+        patient_id = await get_patient_id(cpf=self.cpf_paciente, prontuario_amh=self.prontuario)
+
+        if patient_id:
+            patient_reference = Reference(
+                reference=f"Patient/{patient_id}"
+            )
+            encounter.subject = patient_reference
                 
-        if self.prontuario and not patient_reference:
-            patient_id = await get_patient_id_by_prontuario_amh(self.prontuario)
-            
-            if patient_id:
-                patient_reference = Reference(
-                    reference=f"Patient/{patient_id}" 
-                )
-                
-        encounter.subject = patient_reference
-    
+
         return encounter
