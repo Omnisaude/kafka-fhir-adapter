@@ -86,20 +86,6 @@ class PractitionerResource:
             )
             practitioner.identifier.append(identifier_cpf)
 
-        if self.nr_conselho:
-            identifier_crm = Identifier(
-                system="https://fhir.omnisaude.co/r4/core/sid/crm",
-                value=self.nr_conselho
-            )
-            practitioner.identifier.append(identifier_crm)
-
-        if self.codigo_pessoa_fisica:
-            identifier_internal = Identifier(
-                system="https://fhir.omnisaude.co/r4/core/sid/cd_pessoa_fisica",
-                value=self.codigo_pessoa_fisica
-            )
-            practitioner.identifier.append(identifier_internal)
-
         if self.codigo_sexo:
             practitioner.gender = self.codigo_sexo.lower()
 
