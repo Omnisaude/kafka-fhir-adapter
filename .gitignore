@@ -131,6 +131,7 @@ env.bak/
 venv.bak/
 kafka-fhir/
 kafka/
+kafka-env/
 
 # Spyder project settings
 .spyderproject
