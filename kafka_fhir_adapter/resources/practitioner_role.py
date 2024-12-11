@@ -3,11 +3,11 @@ from typing import Optional
 
 from fhir.resources.R4B.practitionerrole import PractitionerRole
 from fhir.resources.R4B.meta import Meta
-from fhir.resources.R4B.identifier import Identifier
-from fhir.resources.R4B.extension import Extension
 from fhir.resources.R4B.coding import Coding
 from fhir.resources.R4B.codeableconcept import CodeableConcept
 from fhir.resources.R4B.reference import Reference
+
+from kafka_fhir_adapter.services.fhir_practitioner import *
 
 @dataclass
 class PractitionerRoleResource:
@@ -33,7 +33,7 @@ class PractitionerRoleResource:
             practitioner_especialidade_medica=message.get('PRACTITIONER_ESPECIALIDADE_MEDICA', None)
         )
 
-    async def to_fhir(self) -> PractitionerRole:
+    async def to_fhir(self) -> Optional[PractitionerRole]:
         practitioner_role = PractitionerRole(
             identifier=[],
             code=[],
@@ -48,22 +48,22 @@ class PractitionerRoleResource:
             ]
         )
         practitioner_role.meta = meta
-        
-        """
-        practitioner_reference = None
 
-        if self.practitioner_role_cpf:
-            practitioner_cpf = await get_practitioner_id_by_cpf(self.patient_reference_cpf)
+        if not self.practitioner_role_cpf:
+            return None
 
-            if practitioner_cpf:
-                practitioner_reference = Reference(
-                    reference=f"Practitioner/{practitioner_cpf}"
-                )
-        """
+        practitioner_id = await get_practitioner_id_by_cpf(self.practitioner_role_cpf)
+
+        if not practitioner_id:
+            return None
+
+        practitioner_role.practitioner = Reference(
+            reference=f"Practitioner/{practitioner_id}"
+        )
         
         if self.practitioner_role_cd_cbo and self.practitioner_role_nome_cbo:
             cbo_coding = Coding(
-                system="http://www.saude.gov.br/fhir/r4/ValueSet/BROcupacao-1.0",
+                system="http://www.saude.gov.br/fhir/r4/CodeSystem/BRCBO",
                 code=self.practitioner_role_cd_cbo,
                 display=self.practitioner_role_nome_cbo
             )
