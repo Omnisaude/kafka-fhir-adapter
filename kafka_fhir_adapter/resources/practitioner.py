@@ -8,13 +8,10 @@ from fhir.resources.R4B.address import Address
 from fhir.resources.R4B.contactpoint import ContactPoint
 from fhir.resources.R4B.meta import Meta
 from fhir.resources.R4B.fhirprimitiveextension import FHIRPrimitiveExtension
-from fhir.resources.R4B.period import Period
-from fhir.resources.R4B.extension import Extension
 
 @dataclass
 class PractitionerResource:
     id: Optional[str]
-    codigo_pessoa_fisica: Optional[str]
     nome_profissional: Optional[str]
     cpf: Optional[str]
     data_nascimento: Optional[str]
@@ -37,7 +34,6 @@ class PractitionerResource:
     def from_dict(cls, message: dict):
         return cls(
             id=None,
-            codigo_pessoa_fisica=message.get('CD_PESSOA_FISICA', None),
             nome_profissional=message.get('NOME_PROFISSIONAL', None),
             cpf=message.get('CPF', None),
             data_nascimento=message.get('DATA_NASCIMENTO', None),
@@ -101,8 +97,7 @@ class PractitionerResource:
         if self.telefone:
             telecom = ContactPoint(
                 system="phone",
-                value=self.telefone,
-                use="mobile"
+                value=self.telefone
             )
             practitioner.telecom.append(telecom)
 

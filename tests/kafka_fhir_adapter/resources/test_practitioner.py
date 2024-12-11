@@ -1,11 +1,9 @@
 import json
 from kafka_fhir_adapter.resources.practitioner import PractitionerResource
-import pytest
 
 complete_message_practitioner = '''{
-    "CD_PESSOA_FISICA": "7891011",
     "NOME_PROFISSIONAL": "João da Silva",
-    "CPF": "123.456.789-00",
+    "CPF": "12345678900",
     "DATA_NASCIMENTO": "1985-07-23",
     "CODIGO_TIPO_LOGRADOURO": null,
     "LOGRADOURO": "Rua das Flores",
@@ -17,19 +15,16 @@ complete_message_practitioner = '''{
     "CODIGO_PAIS": "BRA",
     "CEP": "12345678",
     "ENDERECO_COMPLETO": "Rua das Flores, 123, Apartamento 45, Jardim Primavera, 12345678, Brasil",
-    "NR_CONSELHO": "CRM123456",
     "CODIGO_SEXO": "1",
     "TELEFONE": "+55 (11) 98765-4321"
   }'''
 
 
-def test_create_condition_complete():
+def test_create_practitioner():
   message = json.loads(complete_message_practitioner)
 
   practitioner_resource = PractitionerResource.from_dict(message)
   practitioner = practitioner_resource.to_fhir()
-  print("Practitioner Resource:", practitioner_resource)
-  print("Practitioner Object:", practitioner)
   assert practitioner.name[0].text == "João da Silva"
   assert practitioner.meta.profile[0] == "https://fhir.omnisaude.co/r4/core/StructureDefinition/profissional"
   assert practitioner.address[0].country == "BRA"
