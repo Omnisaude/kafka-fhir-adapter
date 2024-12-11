@@ -36,3 +36,4 @@ async def test_create_vital_signs():
   assert bundle.entry[4].resource.component[0].code.coding[0].code == "8480-6"
   assert bundle.entry[4].resource.component[1].code.coding[0].code == "8462-4"
   assert bundle.entry[4].resource.component[2].code.coding[0].code == "8478-0"
+  assert bundle.entry[4].resource.encounter.reference == "Encounter/encontro-01"

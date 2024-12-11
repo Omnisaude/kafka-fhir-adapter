@@ -9,6 +9,7 @@ from fhir.resources.R4B.coding import Coding
 from fhir.resources.R4B.observation import Observation, ObservationComponent
 from fhir.resources.R4B.meta import Meta
 
+from kafka_fhir_adapter.services.fhir_encounter import get_encounter_id_by_nr_atendimento
 from kafka_fhir_adapter.services.fhir_patient import *
 
 
@@ -64,7 +65,6 @@ class SinalVital:
         )
 
     def is_valid(self) -> bool:
-        # TODO: tem mais critérios id, data_liberacao, cpf_profissional, nr_atendimento ...?
         if not self.cpf_paciente and not self.numero_prontuario_amh:
             return False
 
@@ -79,12 +79,12 @@ class SinalVital:
                 ]):
             return False
 
-        if not self.data_hora_sinal_vital:
+        if not self.data_hora_sinal_vital or not self.data_hora_liberacao or not self.numero_atendimento:
             return False
 
         return True
 
-    def vital_signs_base(self, observation_code: str, patient_id: str) -> Observation:
+    async def vital_signs_base(self, observation_code: str) -> Optional[Observation]:
         vital_sign_base = Observation(
             meta=self.meta,
             category=[self.category],
@@ -99,11 +99,27 @@ class SinalVital:
             status=self.status
         )
 
+        patient_id = await get_patient_id(cpf=self.cpf_paciente, prontuario_amh=self.numero_prontuario_amh)
+
+        if not patient_id:
+            return None
+
         vital_sign_base.subject = Reference(
             reference="Patient/" + patient_id
         )
 
+        encounter_id = await get_encounter_id_by_nr_atendimento(self.numero_atendimento)
+
+        if not encounter_id:
+            return None
+
+        vital_sign_base.encounter = Reference(
+            reference="Encounter/" + encounter_id
+        )
+
         vital_sign_base.effectiveDateTime = self.data_hora_sinal_vital.replace(" ", "T") + "-03:00"
+
+        vital_sign_base.issued = self.data_hora_liberacao.replace(" ", "T") + "-03:00"
 
         return vital_sign_base
 
@@ -121,23 +137,18 @@ class SinalVital:
             "saturacao_oxigenio_valor": ["2708-6", "%"]
         }
 
-        patient_id = await get_patient_id(cpf=self.cpf_paciente, prontuario_amh=self.numero_prontuario_amh)
-
-        if not patient_id:
-            return None
-
         vital_signs_resources = []
         for attribute, [observation_code, unit] in fhir_mapping.items():
             value = getattr(self, attribute)
             if value:
-                vital_signs_resources.append(self.create_sinal_vital(patient_id, observation_code, value, unit))
+                vital_signs_resources.append(await self.create_sinal_vital(observation_code, value, unit))
 
-        blood_pressure_painel = self.create_blood_pressure_painel(patient_id)
+        blood_pressure_painel = await self.create_blood_pressure_painel()
         if blood_pressure_painel:
             vital_signs_resources.append(blood_pressure_painel)
 
 
-        vital_signs_painel = self.vital_signs_base(vital_signs_painel_code, patient_id)
+        vital_signs_painel = await self.vital_signs_base(vital_signs_painel_code)
         vital_signs_painel.hasMember = []
 
         bundle_trasaction = Bundle(type="transaction", entry=[])
@@ -173,8 +184,8 @@ class SinalVital:
 
         return bundle_trasaction
 
-    def create_sinal_vital(self, patient_id: str, observation_code: str, value: str, unit_code: str) -> Observation:
-        vital_sign = self.vital_signs_base(observation_code, patient_id)
+    async def create_sinal_vital(self, observation_code: str, value: str, unit_code: str) -> Observation:
+        vital_sign = await self.vital_signs_base(observation_code)
 
         vital_sign.valueQuantity = Quantity(
             value=value,
@@ -185,7 +196,7 @@ class SinalVital:
 
         return vital_sign
 
-    def create_blood_pressure_painel(self, patient_id: str) -> Optional[Observation]:
+    async def create_blood_pressure_painel(self) -> Optional[Observation]:
         blood_pressure_painel_code = "85354-9"
 
         # Atributo: [observation_code, unit]
@@ -195,7 +206,7 @@ class SinalVital:
             "pressao_arterial_media_valor": ["8478-0", "mm[Hg]"]
         }
 
-        blood_pressure_painel = self.vital_signs_base(blood_pressure_painel_code, patient_id)
+        blood_pressure_painel = await self.vital_signs_base(blood_pressure_painel_code)
 
         component = []
 
