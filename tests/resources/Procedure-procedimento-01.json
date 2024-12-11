@@ -1,0 +1,31 @@
+{
+  "resourceType": "Procedure",
+  "id": "procedimento-01",
+  "meta": {
+    "profile": [
+      "https://fhir.omnisaude.co/r4/core/StructureDefinition/procedimento"
+    ]
+  },
+  "performedPeriod": {
+    "start": "2024-03-10T19:30:00-03:00",
+    "end": "2024-03-10T20:35:00-03:00"
+  },
+  "status": "completed",
+  "code": {
+    "coding": [
+      {
+        "code": "36005088",
+        "system": "https://fhir.omnisaude.co/r4/core/CodeSystem/procedimento-amh"
+      }
+    ]
+  },
+  "subject": {
+    "reference": "Patient/paciente-01"
+  },
+  "encounter": {
+    "reference": "Encounter/encontro-01"
+  },
+  "location": {
+    "reference": "Location/local-01"
+  }
+}

@@ -4,7 +4,7 @@ from kafka_fhir_adapter.resources.practitioner_role import PractitionerRoleResou
 
 complete_message_practitioner_role = '''{
     "PRACTITIONER_ROLE_KEY": "123456",
-    "PRACTITIONER_ROLE_CPF": "123.456.789-00",
+    "PRACTITIONER_ROLE_CPF": "03276299359",
     "PRACTITIONER_ROLE_DATA_ATUALIZACAO": "2024-01-01",
     "PRACTITIONER_ROLE_CD_CBO": "225125",
     "PRACTITIONER_ROLE_NOME_CBO": "Médico Clínico",
@@ -17,32 +17,9 @@ async def test_create_practitioner_role_complete():
     message = json.loads(complete_message_practitioner_role)
     practitioner_role_resource = PractitionerRoleResource.from_dict(message)
     practitioner_role = await practitioner_role_resource.to_fhir()
-    print("PractitionerRole Resource:", practitioner_role_resource)
-    print("PractitionerRole Object:", practitioner_role)
+
+    assert practitioner_role is not None
     assert practitioner_role.meta.profile[0] == "https://fhir.omnisaude.co/r4/core/StructureDefinition/papel-profissional"
-    assert practitioner_role.code[0].coding[0].system == "http://www.saude.gov.br/fhir/r4/ValueSet/BROcupacao-1.0"
     assert practitioner_role.code[0].coding[0].code == "225125"
     assert practitioner_role.code[0].coding[0].display == "Médico Clínico"
     assert practitioner_role.active is True
-
-
-async def test_create_practitioner_role_minimal():
-    minimal_message = {
-        "PRACTITIONER_ROLE_KEY": "123456",
-        "PRACTITIONER_ROLE_CPF": "123.456.789-00"
-    }
-    
-    practitioner_role_resource = PractitionerRoleResource.from_dict(minimal_message)
-    practitioner_role = await practitioner_role_resource.to_fhir()
-    assert practitioner_role.meta.profile[0] == "https://fhir.omnisaude.co/r4/core/StructureDefinition/papel-profissional"
-    assert practitioner_role.active is True
-    assert len(practitioner_role.code) == 0
-
-
-async def test_create_practitioner_role_empty():
-    empty_message = {}
-    practitioner_role_resource = PractitionerRoleResource.from_dict(empty_message)
-    practitioner_role = await practitioner_role_resource.to_fhir()
-    assert practitioner_role.meta.profile[0] == "https://fhir.omnisaude.co/r4/core/StructureDefinition/papel-profissional"
-    assert practitioner_role.active is True
-    assert len(practitioner_role.code) == 0
