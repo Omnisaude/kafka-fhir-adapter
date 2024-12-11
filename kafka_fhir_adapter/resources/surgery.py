@@ -86,7 +86,8 @@ class SurgeryResource:
 
         procedure = Procedure(
             status = codigo_fhir_status,
-            subject = patient_reference
+            subject = patient_reference,
+            meta=Meta(profile=["https://fhir.omnisaude.co/r4/core/StructureDefinition/procedimento"])
         )
 
         if self.surgery_encounter_code:
@@ -117,7 +118,7 @@ class SurgeryResource:
 
         if self.surgery_code:
             coding_procedure_cc = Coding(
-                system="http://www.ans.gov.br/tuss",
+                system="https://fhir.omnisaude.co/r4/core/CodeSystem/procedimento-amh",
                 code=self.surgery_code,
                 display= self.surgery_name
             )
