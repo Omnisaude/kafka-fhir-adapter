@@ -8,6 +8,7 @@ from kafka_fhir_adapter.database.base import init_db
 from kafka_fhir_adapter.consumers.patient import PatientConsumer
 from kafka_fhir_adapter.consumers.location import LocationConsumer
 from kafka_fhir_adapter.consumers.encounter import EncounterConsumer
+from kafka_fhir_adapter.consumers.condition import ConditionConsumer
 
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -19,6 +20,7 @@ organization_consumer = OrganizationConsumer(app, schema_registry_client, fhir_s
 patient_consumer = PatientConsumer(app, schema_registry_client, fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_PATIENT_NAME)
 location_consumer = LocationConsumer(app, schema_registry_client, fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_LOCATION_NAME)
 encounter_consumer = EncounterConsumer(app, schema_registry_client, fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_ENCOUNTER_NAME)
+condition_consumer = ConditionConsumer(app,schema_registry_client,fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_CONDITION_NAME)
 
 @app.agent(organization_consumer.topic_name)
 async def process_organization_topic(messages):
@@ -35,6 +37,19 @@ async def process_location_topic(messages):
 @app.agent(encounter_consumer.topic_name)
 async def process_encounter_topic(messages):
     await encounter_consumer.consume(messages)
+
+@app.agent(condition_consumer.topic_name)
+async def process_condition_topic(messages):
+    await condition_consumer.consume(messages)
+
+# @app.agent(topico_ginfes_nfse)
+# async def process_topico_ginfes_nfse(messages):
+#     async for message in messages:
+#         if validate_payload(message):
+#             logging.info(f"Mensagem {message} validada com sucesso!")
+#         else:
+#             logging.error(f"Mensagem {message} validada com falha")
+
 
 if __name__ == '__main__':
     init_db()

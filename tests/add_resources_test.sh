@@ -60,6 +60,10 @@ resources_order=(
     "Encounter"
     "Observation"
     "AllergyIntolerance"
+    "Condition"
+    "Procedure"
+    "Medication"
+    "MedicationStatement"
 )
 
 # Itera sobre a ordem dos recursos
