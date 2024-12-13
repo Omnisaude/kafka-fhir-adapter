@@ -1,4 +1,6 @@
 import requests
+from faust import App
+
 from kafka_fhir_adapter.config import *
 
 from fhir.resources.R4B.identifier import Identifier
@@ -49,3 +51,25 @@ async def get_organization_id_by_cnpj(cnpj: str):
     if organization:
         return organization['id']
     return None
+
+async def update_organization_by_cnpj(app: App, cnpj: str, payload_json: str):
+    identifier_fhir = Identifier(system=CNPJ_SYSTEM, value=cnpj)
+    response = await app.http_client.put(
+        url=FHIR_ORGANIZATION_URL,
+        params={
+            'identifier': f'{identifier_fhir.system}|{identifier_fhir.value}'
+        },
+        json=payload_json
+    )
+    response.raise_for_status()
+    return await response.json()
+
+
+async def update_organization_by_id(app: App, id: str, payload_json):
+    print(payload_json)
+    response = await app.http_client.put(
+        url=os.path.join(FHIR_ORGANIZATION_URL, id),
+        json=payload_json
+    )
+    response.raise_for_status()
+    return await response.json()

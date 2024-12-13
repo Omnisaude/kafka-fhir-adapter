@@ -1,18 +1,24 @@
 import json
 import logging
+from http.client import HTTPException
 
 from confluent_kafka.schema_registry.avro import AvroDeserializer
+from faust import App
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
 from kafka_fhir_adapter.database.base import SessionLocal
 from kafka_fhir_adapter.database.models import OrganizationModel
 from kafka_fhir_adapter.resources.organization import OrganizationResource
 from kafka_fhir_adapter.services.fhir import send_payload, send_validate_payload
+from kafka_fhir_adapter.services.fhir_organization import get_organization_by_cnpj, update_organization_by_cnpj, \
+    update_organization_by_id
 
 logger = logging.getLogger(__name__)
 
 
 class OrganizationConsumer:
-    def __init__(self, app, schema_registry_client, fhir_server_url, topic_name):
+    def __init__(self, app: App, schema_registry_client, fhir_server_url, topic_name):
         self.app = app
         self.schema_registry_client = schema_registry_client
         self.fhir_server_url = fhir_server_url
@@ -41,27 +47,56 @@ class OrganizationConsumer:
                 logger.info(f"valid payload")
 
                 with SessionLocal() as session:
-                    existing_organization = session.query(OrganizationModel)\
-                        .where(OrganizationModel.cnpj == input_organization.cnpj).first()
+                    try:
+                        # Busca o registro existente
+                        mapped_organization = session.query(OrganizationModel) \
+                            .filter_by(cnpj=input_organization.cnpj).first()
 
-                    if existing_organization:
-                        logger.info(f"organization with cnpj {existing_organization.cnpj} found, we'll update it")
-                        if existing_organization.last_update_tasy < input_organization.data_atualizacao_tasy:
-                            existing_organization.last_update_tasy = input_organization.data_atualizacao_tasy
+                        if mapped_organization:
+                            logger.info(f"Organization with CNPJ {mapped_organization.cnpj} found in the database.")
+
+                            # Verifica se o registro recebido é mais recente
+                            if mapped_organization.last_update_tasy < input_organization.data_atualizacao_tasy:
+                                # Atualiza o registro existente por cnpj - funcionando só que como tem duplicados na base evitei por hora
+                                # updated_organization_fhir = await update_organization_by_cnpj(
+                                #     app=self.app,
+                                #     cnpj=input_organization.cnpj,
+                                #     payload_json=input_organization_fhir
+                                # )
+
+                                # Atualiza por ID
+                                updated_organization_fhir = await update_organization_by_id(
+                                    app=self.app,
+                                    id=mapped_organization.id_fhir,
+                                    payload_json=input_organization_fhir
+                                )
+                                mapped_organization.last_update_tasy = input_organization.data_atualizacao_tasy
+                                session.commit()
+                                logger.info(
+                                    f"Organization with ID {updated_organization_fhir.get('id')} updated by CNPJ {mapped_organization.cnpj}.")
+                            else:
+                                logger.info("Ignored - the data in the database is up to date.")
+                        else:
+                            # Insere novo registro se não existir
+                            logger.info("Organization not found, inserting new record.")
+                            result = await send_payload(self.app, message=input_organization_fhir, url=send_url)
+                            new_organization = OrganizationModel(
+                                cnpj=input_organization.cnpj,
+                                last_update_tasy=input_organization.data_atualizacao_tasy,
+                                id_fhir=result.get('id')
+                            )
+                            session.add(new_organization)
                             session.commit()
-                            logger.info('organization updated')
-                        logger.info('the existing organization is most recently updated')
-                    else:
-                        logger.info("organization not found, we'll insert")
-                        result = await send_payload(self.app, message=input_organization_fhir, url=send_url)
+                            logger.info(f"New organization with CNPJ {new_organization.cnpj} added.")
 
-                        resource = OrganizationModel(
-                            cnpj=input_organization.cnpj,
-                            last_update_tasy=input_organization.data_atualizacao_tasy,
-                            id_fhir=result.get('id')
-                        )
-                        session.add(resource)
-                        session.commit()
-                        logger.info(f"new organization with cnpj {resource.cnpj} added!")
+                    except SQLAlchemyError as e:
+                        session.rollback()
+                        logger.error(f"Database error during operation: {str(e)}")
+                    except HTTPException as e:
+                        logger.error(f"HTTP error during communication with external service: {str(e)}")
+                    except Exception as e:
+                        session.rollback()
+                        logger.error(f"Unexpected error: {str(e)}")
+            # nao passou na validacao
             else:
                 logger.error(f"invalid payload {parsed_message}")

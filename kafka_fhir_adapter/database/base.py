@@ -10,7 +10,7 @@ Base = declarative_base()
 engine = create_engine(config.DATABASE_URL, echo=True)
 
 # Criação da sessão
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(autoflush=False, bind=engine)
 
 # Inicializar as tabelas
 def init_db():
