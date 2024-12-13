@@ -9,6 +9,7 @@ and filter messages that are not suitable to proceed for forward processing.
 #SCHEMA_REGISTRY_URL='http://ip_do_servidor:8080'
 FHIR_SERVER_URL='http://ip_do_servidor:8080'
 TOPIC_ORGANIZATION_NAME='amh_organization'
+DATABASE_URL='postgresql://senha:password@ip:5432/database'
 ```
 
 ## Configurar debug local
