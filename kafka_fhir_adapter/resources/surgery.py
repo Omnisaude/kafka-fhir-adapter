@@ -58,7 +58,8 @@ class SurgeryResource:
             "Prevista": "preparation",  # Prevista -> Preparation
             "Realizada": "completed",  # Realizada -> Completed
             "Cancelada": "not-done",  # Cancelada -> Not Done
-            "Interrompida": "stopped"  # Interrompida -> Stopped
+            "Interrompida": "stopped",
+            None: "unknown"
         }
 
         codigo_fhir_status = status_surgery_mapping.get(self.surgery_status, "unknown")

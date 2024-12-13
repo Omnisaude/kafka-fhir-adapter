@@ -47,18 +47,17 @@ class EncounterResource:
         )
     
     async def to_fhir(self):
-        if not self.tipo_atendimento:
-            raise AttributeError("tipo_atendimento is required | Encounter.class is required")
 
         tipo_atendimento_mapping = {
             "Internado": "IMP",    # Internado -> Inpatient Encounter
             "Pronto socorro": "EMER",   # Pronto Socorro -> Emergency Encounter
             "Atendimento domiciliar": "HH",     # Atendimento Domiciliar -> Home Health Encounter
             "Externo": "FLD",    # Externo -> Field Encounter
-            "Ambulatorial": "AMB"     # Ambulatorial -> Ambulatory Encounter
+            "Ambulatorial": "AMB",
+            None: "NONAC"# Ambulatorial -> Ambulatory Encounter
         }
 
-        codigo_fhir_class = tipo_atendimento_mapping.get(self.tipo_atendimento)
+        codigo_fhir_class = tipo_atendimento_mapping.get(self.tipo_atendimento,"NONAC")
 
         if not codigo_fhir_class:
             raise ValueError(f"Tipo de atendimento inválido: {self.tipo_atendimento}")
@@ -68,18 +67,17 @@ class EncounterResource:
             system="http://terminology.hl7.org/CodeSystem/v3-ActCode",
             code=codigo_fhir_class
         )
-        
-        if not self.status_atendimento:
-            raise AttributeError("status_atendimento is required | Encounter.status is required")
-            
+
         status_atendimento_mapping = {
-            "Atendido": "finished",      # Atendido -> Finished
-            "Em espera": "planned",       # Em espera -> Planned
-            "Em consulta": "in-progress"    # Em consulta -> In Progress
+            "Atendido": "finished",  # Atendido -> Finished
+            "Em espera": "planned",  # Em espera -> Planned
+            "Em consulta": "in-progress",  # Em consulta -> In Progress
+            None: "unknown"
         }
+
         
         # required element
-        codigo_fhir_status = status_atendimento_mapping.get(self.status_atendimento)
+        codigo_fhir_status = status_atendimento_mapping.get(self.status_atendimento,"unknown")
         
         if not codigo_fhir_status:
             raise ValueError(f"Status de atendimento inválido: {self.status_atendimento}")       

@@ -29,7 +29,8 @@ class PractitionerRoleConsumer:
             parsed_message: dict = deserializer(raw_message, {})
 
             practitioner_role = PractitionerRoleResource.from_dict(parsed_message)
-            practitioner_role_json = json.loads(practitioner_role.to_fhir().json())
+            practitioner_role_fhir = await practitioner_role.to_fhir()  # Chamada assíncrona
+            practitioner_role_json = json.loads(practitioner_role_fhir.json())
 
             validate_url = f"{self.fhir_server_url}/fhir/PractitionerRole/$validate"
             send_url = f"{self.fhir_server_url}/fhir/PractitionerRole/"

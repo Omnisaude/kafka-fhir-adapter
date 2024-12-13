@@ -61,7 +61,8 @@ class ConditionResource:
 
         coding_code = Coding(
             system="http://hl7.org/fhir/sid/icd-10",
-            code=self.code
+            code=self.code,
+            display=self.name,
         )
         codeable_concept_code = CodeableConcept(coding=[coding_code])
 
@@ -74,8 +75,7 @@ class ConditionResource:
 
         verification_status_mapping = {
             "Preliminar": "provisional",
-            "Definitivo": "confirmed",
-            None: "entered-in-error"
+            "Definitivo": "confirmed"
         }
 
         coding_verification_status = verification_status_mapping.get(self.type)
