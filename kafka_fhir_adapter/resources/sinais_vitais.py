@@ -117,9 +117,9 @@ class SinalVital:
             reference="Encounter/" + encounter_id
         )
 
-        vital_sign_base.effectiveDateTime = self.data_hora_sinal_vital.replace(" ", "T") + "-03:00"
+        vital_sign_base.effectiveDateTime = self.data_hora_sinal_vital
 
-        vital_sign_base.issued = self.data_hora_liberacao.replace(" ", "T") + "-03:00"
+        vital_sign_base.issued = self.data_hora_liberacao
 
         return vital_sign_base
 
