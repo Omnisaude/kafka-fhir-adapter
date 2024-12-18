@@ -10,13 +10,14 @@ logger = logging.getLogger(__name__)
 
 
 class EncounterConsumer:
-    def __init__(self, app, schema_registry_client, fhir_server_url, topic_name):
+    def __init__(self, app, schema_registry_client, fhir_server_url, topic_name, topic_name_error):
         self.app = app
         self.schema_registry_client = schema_registry_client
         self.fhir_server_url = fhir_server_url
         self.topic_name = topic_name
         self.topic = None
         self.init_topic()
+        self.topic_name_error = topic_name_error
 
     def init_topic(self):
         if self.topic_name is None:
@@ -35,7 +36,7 @@ class EncounterConsumer:
             validate_url = f"{self.fhir_server_url}/fhir/Encounter/$validate"
             send_url = f"{self.fhir_server_url}/fhir/Encounter/"
 
-            validate_response = await send_validate_payload(self.app, encounter_json, url=validate_url)
+            validate_response = await send_validate_payload(self.app, encounter_json, url=validate_url,  error_topic_name= self.topic_name_error)
 
             if validate_response:
                 logger.info(f"Mensagem {parsed_message} validada com sucesso!")

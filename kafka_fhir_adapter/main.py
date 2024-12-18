@@ -11,6 +11,7 @@ from kafka_fhir_adapter.consumers.condition import ConditionConsumer
 from kafka_fhir_adapter.consumers.practitioner import PractitionerConsumer
 from kafka_fhir_adapter.consumers.practitioner_role import PractitionerRoleConsumer
 from kafka_fhir_adapter.consumers.surgery import SurgeryConsumer
+from kafka_fhir_adapter.consumers.sinais_vitais import SinalVitalConsumer
 
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -18,14 +19,15 @@ app = faust.App('fhir_consumer', broker=config.KAFKA_BROKER_URL, value_serialize
 schema_registry_client = SchemaRegistryClient({'url': config.SCHEMA_REGISTRY_URL})
 
 # TOPICOS QUE SERAO CONSUMIDOS
-organization_consumer = OrganizationConsumer(app, schema_registry_client, fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_ORGANIZATION_NAME)
-patient_consumer = PatientConsumer(app, schema_registry_client, fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_PATIENT_NAME)
-location_consumer = LocationConsumer(app, schema_registry_client, fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_LOCATION_NAME)
-encounter_consumer = EncounterConsumer(app, schema_registry_client, fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_ENCOUNTER_NAME)
-condition_consumer = ConditionConsumer(app,schema_registry_client,fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_CONDITION_NAME)
-practitioner_consumer = PractitionerConsumer(app,schema_registry_client,fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_PRACTITIONER_NAME)
-practitioner_role_consumer = PractitionerRoleConsumer(app,schema_registry_client,fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_PRACTITIONER_ROLE_NAME)
-surgery_consumer = SurgeryConsumer(app,schema_registry_client,fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_SURGERY_NAME)
+organization_consumer = OrganizationConsumer(app, schema_registry_client, fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_ORGANIZATION_NAME, topic_name_error=config.TOPIC_ORGANIZATION_NAME_ERROR)
+patient_consumer = PatientConsumer(app, schema_registry_client, fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_PATIENT_NAME, topic_name_error=config.TOPIC_PATIENT_NAME_ERROR)
+location_consumer = LocationConsumer(app, schema_registry_client, fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_LOCATION_NAME, topic_name_error=config.TOPIC_LOCATION_NAME_ERROR)
+encounter_consumer = EncounterConsumer(app, schema_registry_client, fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_ENCOUNTER_NAME, topic_name_error=config.TOPIC_ENCOUNTER_NAME_ERROR)
+condition_consumer = ConditionConsumer(app,schema_registry_client,fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_CONDITION_NAME, topic_name_error=config.TOPIC_CONDITION_NAME_ERROR)
+practitioner_consumer = PractitionerConsumer(app,schema_registry_client,fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_PRACTITIONER_NAME, topic_name_error=config.TOPIC_PRACTITIONER_NAME_ERROR)
+practitioner_role_consumer = PractitionerRoleConsumer(app,schema_registry_client,fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_PRACTITIONER_ROLE_NAME, topic_name_error=config.TOPIC_PRACTITIONER_ROLE_NAME_ERROR)
+surgery_consumer = SurgeryConsumer(app,schema_registry_client,fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_SURGERY_NAME, topic_name_error=config.TOPIC_SURGERY_NAME_ERROR)
+vital_signs_consumer = SinalVitalConsumer(app,schema_registry_client,fhir_server_url=config.FHIR_SERVER_URL, topic_name=config.TOPIC_VITAL_SIGNS_NAME, topic_name_error=config.TOPIC_VITAL_SIGNS_NAME_ERROR)
 
 @app.agent(organization_consumer.topic_name)
 async def process_organization_topic(messages):
@@ -58,6 +60,10 @@ async def process_practitioner_role_topic(messages):
 @app.agent(surgery_consumer.topic_name)
 async def process_surgery_topic(messages):
     await surgery_consumer.consume(messages)
+
+@app.agent(vital_signs_consumer.topic_name)
+async def process_vital_signs_topic(messages):
+    await vital_signs_consumer.consume(messages)
 
 # @app.agent(topico_ginfes_nfse)
 # async def process_topico_ginfes_nfse(messages):
